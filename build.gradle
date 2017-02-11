@@ -1,0 +1,25 @@
+group 'com.andipangeran.pusatlawak'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'application'
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'eclipse'
+
+sourceCompatibility=1.8
+targetCompatibility=1.8
+
+repositories {
+    mavenCentral()
+}
+
+mainClassName = "com.andipangeran.pusatlawak.HttpServer"
+
+
+dependencies {
+    testCompile("junit:junit:${junit}")
+    testCompile("com.typesafe.akka:akka-http-testkit_${scalabinary}:${akkahttp}")
+
+    compile("com.google.dagger:dagger:${dagger}")
+    compile("com.typesafe.akka:akka-http_${scalabinary}:${akkahttp}")
+}
