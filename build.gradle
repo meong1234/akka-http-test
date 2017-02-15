@@ -13,13 +13,24 @@ repositories {
     mavenCentral()
 }
 
-mainClassName = "com.andipangeran.pusatlawak.HttpServer"
+run {
+    mainClassName = "com.andipangeran.pusatlawak.HttpServer"
+    standardInput = System.in
+}
 
 
 dependencies {
     testCompile("junit:junit:${junit}")
     testCompile("com.typesafe.akka:akka-http-testkit_${scalabinary}:${akkahttp}")
 
-    compile("com.google.dagger:dagger:${dagger}")
+    compileOnly("org.projectlombok:lombok:${lombok}")
+
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${jackson}")
+
+    compile("com.google.inject:guice:${guice}")
+    compile("ch.qos.logback:logback-classic:${logback}")
+
     compile("com.typesafe.akka:akka-http_${scalabinary}:${akkahttp}")
+    compile("com.typesafe.akka:akka-http-jackson_${scalabinary}:${akkahttp}")
+    compile("com.typesafe.akka:akka-actor_${scalabinary}:${akka}")
 }
