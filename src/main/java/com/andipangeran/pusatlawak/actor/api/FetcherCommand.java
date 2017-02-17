@@ -1,4 +1,4 @@
-package com.andipangeran.pusatlawak.fetcher.api;
+package com.andipangeran.pusatlawak.actor.api;
 
 /**
  * Created by jurnal on 2/14/17.

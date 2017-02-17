@@ -21,7 +21,7 @@ run {
 
 dependencies {
     testCompile("junit:junit:${junit}")
-    testCompile("com.typesafe.akka:akka-http-testkit_${scalabinary}:${akkahttp}")
+    testCompile("com.typesafe.akka:akka-http-testkit_${scalabinary}:${akka_http}")
 
     compileOnly("org.projectlombok:lombok:${lombok}")
 
@@ -29,8 +29,10 @@ dependencies {
 
     compile("com.google.inject:guice:${guice}")
     compile("ch.qos.logback:logback-classic:${logback}")
+    compile("io.javaslang:javaslang:${javaslang}")
 
-    compile("com.typesafe.akka:akka-http_${scalabinary}:${akkahttp}")
-    compile("com.typesafe.akka:akka-http-jackson_${scalabinary}:${akkahttp}")
+    compile("com.typesafe.akka:akka-http_${scalabinary}:${akka_http}")
+    compile("com.typesafe.akka:akka-http-jackson_${scalabinary}:${akka_http}")
     compile("com.typesafe.akka:akka-actor_${scalabinary}:${akka}")
+    compile("de.heikoseeberger:akka-sse_${scalabinary}:${akka_sse}")
 }

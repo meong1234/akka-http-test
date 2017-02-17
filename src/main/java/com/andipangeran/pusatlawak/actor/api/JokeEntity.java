@@ -1,4 +1,4 @@
-package com.andipangeran.pusatlawak.fetcher.api;
+package com.andipangeran.pusatlawak.actor.api;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

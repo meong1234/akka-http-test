@@ -1,6 +1,7 @@
 package com.andipangeran.pusatlawak;
 
 import akka.NotUsed;
+import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.http.javadsl.ConnectHttp;
 import akka.http.javadsl.Http;
@@ -11,7 +12,13 @@ import akka.http.javadsl.server.AllDirectives;
 import akka.http.javadsl.server.Route;
 import akka.stream.ActorMaterializer;
 import akka.stream.javadsl.Flow;
-import com.andipangeran.pusatlawak.fetcher.JokesFetcher;
+import akka.stream.javadsl.Source;
+import com.andipangeran.pusatlawak.actor.JokePublisher;
+import com.andipangeran.pusatlawak.actor.JokesFetcher;
+import com.andipangeran.pusatlawak.actor.api.JokeEntity;
+import com.andipangeran.pusatlawak.util.JacksonUtil;
+import de.heikoseeberger.akkasse.ServerSentEvent;
+import de.heikoseeberger.akkasse.japi.EventStreamMarshalling;
 
 import java.util.concurrent.CompletionStage;
 
@@ -50,10 +57,16 @@ public class HttpServer extends AllDirectives {
     }
 
     private Route createRoute() {
+
+        final Source<JokeEntity, ActorRef> source =
+            Source.actorPublisher(JokePublisher.props());
+
         return route(
-            path("hello", () ->
-                get(() ->
-                    complete("<h1>Say hello to akka-http</h1>"))));
+            path("streaming-jokes", () ->
+                get(() -> completeOK(source
+                        .map(msg -> ServerSentEvent.create(JacksonUtil.toJSON(msg), "jsonJoke")),
+                    EventStreamMarshalling.toEventStream())
+                )));
     }
 
 }

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Consuming Streaming JSON</title>
+</head>
+
+<body></body>
+<script>
+    var body = document.body;
+    var eventSource = new EventSource("http://localhost:8080/streaming-jokes");
+    eventSource.addEventListener('jsonJoke', function(event) {
+        var joke = JSON.parse(event.data);
+        body.innerHTML += joke.message + "<br/>";
+    });
+</script>
+</html>
