@@ -22,6 +22,18 @@ public class JokePublisher extends AbstractActorPublisher<JokeEntity> {
         return Props.create(JokePublisher.class, () -> new JokePublisher());
     }
 
+    @Override
+    public void preStart() throws Exception {
+        log.debug("Starting up JokePublisher");
+        getContext().system().eventStream().subscribe(self(), JokeEntity.class);
+    }
+
+    @Override
+    public void postStop() throws Exception {
+        log.debug("Stop JokePublisher");
+        context().system().eventStream().unsubscribe(self());
+    }
+
     public JokePublisher() {
 
         receive(ReceiveBuilder

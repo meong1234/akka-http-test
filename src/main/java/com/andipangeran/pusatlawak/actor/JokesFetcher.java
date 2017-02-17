@@ -67,8 +67,6 @@ public class JokesFetcher extends AbstractLoggingActor {
 
     private JokesFetcher() {
 
-        UnitPFBuilder<Object> builder = ReceiveBuilder.create();
-
         receive(ReceiveBuilder
             .match(FetcherCommand.FetchJoke.class, cmd -> {
 
