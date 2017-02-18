@@ -11,6 +11,7 @@ targetCompatibility=1.8
 
 repositories {
     mavenCentral()
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 }
 
 run {
@@ -35,4 +36,5 @@ dependencies {
     compile("com.typesafe.akka:akka-http-jackson_${scalabinary}:${akka_http}")
     compile("com.typesafe.akka:akka-actor_${scalabinary}:${akka}")
     compile("de.heikoseeberger:akka-sse_${scalabinary}:${akka_sse}")
+    compile("ch.megard:akka-http-cors_${scalabinary}:${akka_http_cors}")
 }

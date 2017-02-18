@@ -14,22 +14,9 @@ import java.util.List;
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
-public class JokeEntity {
+public class JokeResponse {
 
     private String type;
 
     private Joke value;
-
-    @Value
-    @ToString
-    @EqualsAndHashCode
-    @AllArgsConstructor
-    static class Joke {
-
-        private int id;
-
-        private String joke;
-
-        private List<String> categories;
-    }
 }

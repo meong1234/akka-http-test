@@ -4,13 +4,13 @@ import akka.actor.AbstractLoggingActor;
 import akka.actor.ActorRef;
 import akka.actor.Cancellable;
 import akka.actor.Props;
+import akka.event.EventStream;
 import akka.http.javadsl.Http;
 import akka.http.javadsl.model.HttpRequest;
 import akka.japi.pf.ReceiveBuilder;
-import akka.japi.pf.UnitPFBuilder;
 import akka.stream.ActorMaterializer;
 import com.andipangeran.pusatlawak.actor.api.FetcherCommand;
-import com.andipangeran.pusatlawak.actor.api.JokeEntity;
+import com.andipangeran.pusatlawak.actor.api.JokeResponse;
 import javaslang.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import scala.concurrent.duration.FiniteDuration;
@@ -19,7 +19,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
-import static akka.japi.pf.ReceiveBuilder.match;
 import static akka.pattern.PatternsCS.pipe;
 import static com.andipangeran.pusatlawak.util.AkkaUtil.unmarshall;
 import static com.andipangeran.pusatlawak.util.FunctionalUtil.toCompleteableTry;
@@ -36,19 +35,23 @@ public class JokesFetcher extends AbstractLoggingActor {
 
     private Http http = Http.get(getContext().system());
 
+    private EventStream eventStream = getContext().system().eventStream();
+
     private ActorMaterializer materializer = ActorMaterializer.create(getContext().system());
 
     @Override
     public void preStart() throws Exception {
 
-        log.debug("Starting up JokeEntity Fetcher");
+        super.preStart();
+
+        log.debug("Starting up JokeResponse Fetcher");
 
         akka.actor.Scheduler scheduler = getContext().system().scheduler();
 
         cancellable = Optional.of(scheduler
             .schedule(
                 FiniteDuration.apply(1, TimeUnit.SECONDS),
-                FiniteDuration.apply(1, TimeUnit.SECONDS),
+                FiniteDuration.apply(30, TimeUnit.SECONDS),
                 self(),
                 new FetcherCommand.FetchJoke(),
                 getContext().system().dispatcher(),
@@ -58,6 +61,7 @@ public class JokesFetcher extends AbstractLoggingActor {
 
     @Override
     public void postStop() throws Exception {
+        super.postStop();
         cancellable.ifPresent(cancleObj -> cancleObj.cancel());
     }
 
@@ -75,21 +79,20 @@ public class JokesFetcher extends AbstractLoggingActor {
                 pipe(requestJokes(), context().dispatcher()).to(self());
 
             })
-            .match(Try.class, (Try<JokeEntity> cmd) -> {
-                log.info("get response {}", cmd);
-
-                cmd.onSuccess(joke -> context().system().eventStream().publish(joke));
-            })
+            .match(Try.class, (Try<JokeResponse> cmd) -> cmd.onSuccess(jokeResponse -> {
+                log.info("publish response to eventStream {}", jokeResponse.getValue());
+                eventStream.publish(jokeResponse.getValue());
+            }))
             .matchAny(this::unhandled)
             .build()
         );
     }
 
-    private CompletionStage<Try<JokeEntity>> requestJokes() {
+    private CompletionStage<Try<JokeResponse>> requestJokes() {
 
         return http
             .singleRequest(HttpRequest.GET(JOKES_URL), materializer)
-            .thenCompose(unmarshall(JokeEntity.class, context().dispatcher(), materializer))
+            .thenCompose(unmarshall(JokeResponse.class, context().dispatcher(), materializer))
             .handle(toCompleteableTry());
     }
 

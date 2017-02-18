@@ -10,6 +10,7 @@
     var body = document.body;
     var eventSource = new EventSource("http://localhost:8080/streaming-jokes");
     eventSource.addEventListener('jsonJoke', function(event) {
+        console.log(event);
         var joke = JSON.parse(event.data);
         body.innerHTML += joke.message + "<br/>";
     });

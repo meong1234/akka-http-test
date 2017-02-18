@@ -4,7 +4,8 @@ import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
 import akka.stream.actor.AbstractActorPublisher;
 import akka.stream.actor.ActorPublisherMessage;
-import com.andipangeran.pusatlawak.actor.api.JokeEntity;
+import com.andipangeran.pusatlawak.actor.api.Joke;
+import com.andipangeran.pusatlawak.actor.api.JokeResponse;
 import javaslang.Tuple2;
 import javaslang.collection.List;
 import lombok.extern.slf4j.Slf4j;
@@ -13,10 +14,10 @@ import lombok.extern.slf4j.Slf4j;
  * Created by jurnal on 2/17/17.
  */
 @Slf4j
-public class JokePublisher extends AbstractActorPublisher<JokeEntity> {
+public class JokePublisher extends AbstractActorPublisher<Joke> {
 
     private final int MAX_BUFFER_SIZE = 100;
-    private List<JokeEntity> buf = List.empty();
+    private List<Joke> buf = List.empty();
 
     public static Props props() {
         return Props.create(JokePublisher.class, () -> new JokePublisher());
@@ -24,23 +25,25 @@ public class JokePublisher extends AbstractActorPublisher<JokeEntity> {
 
     @Override
     public void preStart() throws Exception {
-        log.debug("Starting up JokePublisher");
-        getContext().system().eventStream().subscribe(self(), JokeEntity.class);
+        super.preStart();
+        log.debug("Starting up JokePublisher {}", getContext().system().eventStream().toString());
+        getContext().system().eventStream().subscribe(self(), Joke.class);
     }
 
     @Override
     public void postStop() throws Exception {
+        super.postStop();
         log.debug("Stop JokePublisher");
-        context().system().eventStream().unsubscribe(self());
+        getContext().system().eventStream().unsubscribe(self());
     }
 
     public JokePublisher() {
 
         receive(ReceiveBuilder
-            .match(JokeEntity.class, msg -> buf.size() == MAX_BUFFER_SIZE, msg -> {
+            .match(Joke.class, msg -> buf.size() == MAX_BUFFER_SIZE, msg -> {
                 log.warn("Buffer is full, ignoring incoming JokeEvent");
             })
-            .match(JokeEntity.class, msg -> {
+            .match(Joke.class, msg -> {
 
                 log.info("get request for publish joke");
 
@@ -53,7 +56,9 @@ public class JokePublisher extends AbstractActorPublisher<JokeEntity> {
             })
             .match(ActorPublisherMessage.Request.class, request -> deliverBuf())
             .match(ActorPublisherMessage.Cancel.class, cancel -> context().stop(self()))
-            .matchAny(this::unhandled)
+            .matchAny(msg -> {
+                log.info("JokePublisher recieved {}", msg);
+            })
             .build()
         );
     }
@@ -70,7 +75,7 @@ public class JokePublisher extends AbstractActorPublisher<JokeEntity> {
     }
 
     private void nextBuff(int demand) {
-        Tuple2<List<JokeEntity>, List<JokeEntity>> tuple2 = this.buf.splitAt(demand);
+        Tuple2<List<Joke>, List<Joke>> tuple2 = this.buf.splitAt(demand);
         this.buf = tuple2._2;
         tuple2._1.forEach(this::onNext);
     }
